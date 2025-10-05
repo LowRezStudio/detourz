@@ -1,10 +1,12 @@
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-    const target = b.resolveTargetQuery(.{
-        .cpu_arch = .x86_64,
-        .os_tag = .windows,
-        .abi = .gnu,
+    const target = b.standardTargetOptions(.{
+        .default_target = .{
+            .cpu_arch = .x86_64,
+            .os_tag = .windows,
+            .abi = .gnu,
+        },
     });
 
     const optimize = b.standardOptimizeOption(.{});
