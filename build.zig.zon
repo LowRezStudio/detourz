@@ -3,12 +3,12 @@
     .version = "0.0.0",
 
     .fingerprint = 0x2a58a1d677350a63,
-    .minimum_zig_version = "0.14.0",
+    .minimum_zig_version = "0.15.1",
 
     .dependencies = .{
         .flags = .{
-            .url = "git+https://github.com/joegm/flags#0e2491d8e6d2be38dc0c2ce8e103469886e468bb",
-            .hash = "flags-0.10.0-a_9h3kR2AABNAfaPGRyOOGmWsfv12Hk6JQPTX4MM446s",
+            .url = "git+https://github.com/joegm/flags#f5ff1c9793c32f2597fdb036eb0336b06de7bf1d",
+            .hash = "flags-0.10.0-a_9h3pxvAADK9fDQw0ONVfZJNBUViUWBYq8uha0IP9zn",
         },
         .detours = .{
             .url = "git+https://github.com/jhark/Detours.git#8fecdd592700a7afb2d68b244fe0f486d2dc568b",

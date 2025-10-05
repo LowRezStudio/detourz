@@ -17,7 +17,7 @@ pub fn main() !void {
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
 
-    const options = flags.parseOrExit(args, "detourz", Flags, .{});
+    const options = flags.parse(args, "detourz", Flags, .{});
 
     switch (options.command) {
         .payloads => |cmd| {

@@ -15,7 +15,7 @@ pub fn run(allocator: std.mem.Allocator, module_path: []const u8) !void {
     );
     defer _ = windows.FreeLibrary(module_handle);
 
-    var stdout = std.io.getStdOut().writer();
+    var stdout = std.fs.File.stdout().writer(&.{});
 
     const ExportContext = struct {
         module_handle: windows.HMODULE,
@@ -27,7 +27,7 @@ pub fn run(allocator: std.mem.Allocator, module_path: []const u8) !void {
         .stdout = stdout,
     };
 
-    stdout.print("{s:>8} {s:<10} {s:<8}\n", .{ "Ordinal", "RVA", "Name" }) catch return;
+    stdout.interface.print("{s:>8} {s:<10} {s:<8}\n", .{ "Ordinal", "RVA", "Name" }) catch return;
 
     const export_callback = struct {
         fn callback(
@@ -35,22 +35,22 @@ pub fn run(allocator: std.mem.Allocator, module_path: []const u8) !void {
             nOrdinal: windows.ULONG,
             pszName: ?[*:0]const u8,
             pCode: ?*anyopaque,
-        ) callconv(.C) windows.BOOL {
+        ) callconv(.c) windows.BOOL {
             const ctx = @as(*ExportContext, @ptrCast(@alignCast(pContext)));
 
-            ctx.stdout.print("{d:>8}", .{nOrdinal}) catch return windows.FALSE;
+            ctx.stdout.interface.print("{d:>8}", .{nOrdinal}) catch return windows.FALSE;
 
             if (pCode) |addr| {
                 const module_base = @intFromPtr(ctx.module_handle);
                 const addr_value = @intFromPtr(addr);
                 const rva = if (addr_value > module_base) addr_value - module_base else addr_value;
-                ctx.stdout.print(" 0x{x:0>8}", .{rva}) catch return windows.FALSE;
+                ctx.stdout.interface.print(" 0x{x:0>8}", .{rva}) catch return windows.FALSE;
             } else {
-                ctx.stdout.print(" {s:<10}", .{"<none>"}) catch return windows.FALSE;
+                ctx.stdout.interface.print(" {s:<10}", .{"<none>"}) catch return windows.FALSE;
             }
 
             const name_str = if (pszName) |n| n else "<none>";
-            ctx.stdout.print(" {s}\n", .{name_str}) catch return windows.FALSE;
+            ctx.stdout.interface.print(" {s}\n", .{name_str}) catch return windows.FALSE;
 
             return windows.TRUE;
         }

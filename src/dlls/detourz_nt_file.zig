@@ -12,8 +12,6 @@ const HINSTANCE = windows.HINSTANCE;
 const DWORD = windows.DWORD;
 const PVOID = windows.PVOID;
 
-const WINAPI = windows.WINAPI;
-
 const VT_100_RESET = "\x1b[0m";
 const VT_100_DIM = "\x1b[2m";
 
@@ -161,7 +159,7 @@ fn NtCreateFile_Hook(
     CreateOptions: nt.CreateOptions,
     EaBuffer: ?*anyopaque,
     EaLength: windows.ULONG,
-) callconv(.C) windows.NTSTATUS {
+) callconv(.c) windows.NTSTATUS {
     const status = g_pfnNtCreateFile(
         FileHandle,
         DesiredAccess,
@@ -196,25 +194,25 @@ fn NtCreateFile_Hook(
 
     const fmt =
         \\NtCreateFile(
-        \\  FileHandle        => {d}
-        \\  DesiredAccess     =  {}
+        \\  FileHandle        => {any}
+        \\  DesiredAccess     =  {any}
         \\  ObjectAttributes  =  {{
         \\    ObjectName               =  "{s}",
-        \\    Attributes               =  {},
-        \\    Length                   =  {},
-        \\    RootDirectory            =  {},
-        \\    SecurityDescriptor       =  {?},
-        \\    SecurityQualityOfService =  {?},
+        \\    Attributes               =  {any},
+        \\    Length                   =  {any},
+        \\    RootDirectory            =  {any},
+        \\    SecurityDescriptor       =  {any},
+        \\    SecurityQualityOfService =  {any},
         \\  }}
-        \\  IoStatusBlock     => {}
-        \\  AllocationSize    =  {?}
-        \\  FileAttributes    =  {}
-        \\  ShareAccess       =  {}
-        \\  CreateDisposition =  {}
-        \\  CreateOptions     =  {}
-        \\  EaBuffer          =  {?}
-        \\  EaLength          =  {}
-        \\) => {}
+        \\  IoStatusBlock     => {any}
+        \\  AllocationSize    =  {any}
+        \\  FileAttributes    =  {any}
+        \\  ShareAccess       =  {any}
+        \\  CreateDisposition =  {any}
+        \\  CreateOptions     =  {any}
+        \\  EaBuffer          =  {any}
+        \\  EaLength          =  {any}
+        \\) => {any}
     ;
 
     log.info(
@@ -259,7 +257,7 @@ fn NtCreateFile_Hook_Short(
     CreateOptions: nt.CreateOptions,
     EaBuffer: ?*anyopaque,
     EaLength: windows.ULONG,
-) callconv(.C) windows.NTSTATUS {
+) callconv(.c) windows.NTSTATUS {
     const status = g_pfnNtCreateFile(
         FileHandle,
         DesiredAccess,
@@ -293,7 +291,7 @@ fn NtCreateFile_Hook_Short(
     const root_dir_name = makeHandleName(ObjectAttributes.RootDirectory, tmp_allocator);
 
     const fmt =
-        \\NtCreateFile(parent = {}, path = "{s}", access = ({})) => {} [io_status = {}, handle = {d}]
+        \\NtCreateFile(parent = {any}, path = "{s}", access = ({any})) => {any} [io_status = {any}, handle = {d}]
     ;
 
     log.info(
@@ -318,7 +316,7 @@ fn NtOpenFile_Hook(
     IoStatusBlock: *nt.IO_STATUS_BLOCK,
     ShareAccess: nt.ShareAccess,
     OpenOptions: nt.OpenOptions,
-) callconv(.C) windows.NTSTATUS {
+) callconv(.c) windows.NTSTATUS {
     const status = g_pfnNtOpenFile(
         FileHandle,
         DesiredAccess,
@@ -349,20 +347,20 @@ fn NtOpenFile_Hook(
 
     const fmt =
         \\NtOpenFile(
-        \\  FileHandle        => {d}
-        \\  DesiredAccess     =  {}
+        \\  FileHandle        => {any}
+        \\  DesiredAccess     =  {any}
         \\  ObjectAttributes  =  {{
         \\    ObjectName               =  "{s}",
-        \\    Attributes               =  {},
-        \\    Length                   =  {},
-        \\    RootDirectory            =  {},
-        \\    SecurityDescriptor       =  {?},
-        \\    SecurityQualityOfService =  {?},
+        \\    Attributes               =  {any},
+        \\    Length                   =  {any},
+        \\    RootDirectory            =  {any},
+        \\    SecurityDescriptor       =  {any},
+        \\    SecurityQualityOfService =  {any},
         \\  }}
-        \\  IoStatusBlock     => {}
-        \\  ShareAccess       =  {}
-        \\  OpenOptions       =  {}
-        \\) => {}
+        \\  IoStatusBlock     => {any}
+        \\  ShareAccess       =  {any}
+        \\  OpenOptions       =  {any}
+        \\) => {any}
     ;
 
     log.info(
@@ -397,7 +395,7 @@ fn NtOpenFile_Hook_Short(
     IoStatusBlock: *nt.IO_STATUS_BLOCK,
     ShareAccess: nt.ShareAccess,
     OpenOptions: nt.OpenOptions,
-) callconv(.C) windows.NTSTATUS {
+) callconv(.c) windows.NTSTATUS {
     const status = g_pfnNtOpenFile(
         FileHandle,
         DesiredAccess,
@@ -426,7 +424,7 @@ fn NtOpenFile_Hook_Short(
     const root_dir_name = makeHandleName(ObjectAttributes.RootDirectory, tmp_allocator);
 
     const fmt =
-        \\NtOpenFile(parent = {}, path = "{s}", access = ({})) => {} [io_status = {}, handle = {d}]
+        \\NtOpenFile(parent = {any}, path = "{s}", access = ({any})) => {any} [io_status = {any}, handle = {d}]
     ;
 
     log.info(
@@ -446,7 +444,7 @@ fn NtOpenFile_Hook_Short(
 
 fn NtClose_Hook(
     Handle: windows.HANDLE,
-) callconv(.C) windows.NTSTATUS {
+) callconv(.c) windows.NTSTATUS {
     if (g_inside_hook) {
         const status = g_pfnNtClose(Handle);
         return status;
@@ -457,7 +455,7 @@ fn NtClose_Hook(
     const status = g_pfnNtClose(Handle);
 
     const fmt =
-        \\NtClose(handle = {d}) => {}
+        \\NtClose(handle = {d}) => {any}
     ;
 
     log.info(
@@ -481,7 +479,7 @@ fn NtReadFile_Hook(
     Length: windows.ULONG,
     ByteOffset: ?*windows.LARGE_INTEGER,
     Key: ?*windows.ULONG,
-) callconv(.C) windows.NTSTATUS {
+) callconv(.c) windows.NTSTATUS {
     const status = g_pfnNtReadFile(
         FileHandle,
         Event,
@@ -509,16 +507,16 @@ fn NtReadFile_Hook(
 
     const fmt =
         \\NtReadFile(
-        \\  FileHandle    =  {}
+        \\  FileHandle    =  {any}
         \\  Event         =  {?}
         \\  ApcRoutine    =  {?}
         \\  ApcContext    =  {?}
-        \\  IoStatusBlock => {}
+        \\  IoStatusBlock => {any}
         \\  Buffer        =  {?} => [{s}{s}]
-        \\  Length        =  {}
+        \\  Length        =  {any}
         \\  ByteOffset    =  {?}
         \\  Key           =  {?}
-        \\) => {}
+        \\) => {any}
     ;
 
     log.info(
@@ -552,7 +550,7 @@ fn NtReadFile_Hook_Short(
     Length: windows.ULONG,
     ByteOffset: ?*windows.LARGE_INTEGER,
     Key: ?*windows.ULONG,
-) callconv(.C) windows.NTSTATUS {
+) callconv(.c) windows.NTSTATUS {
     const status = g_pfnNtReadFile(
         FileHandle,
         Event,
@@ -579,7 +577,7 @@ fn NtReadFile_Hook_Short(
     const buffer_preview = makeBufferPreview(&preview_buf, Buffer, Length, IoStatusBlock.BytesTransferred);
 
     const fmt =
-        \\NtReadFile(handle = {}, length = {}, offset = {?}) => {} [bytes_transferred = {}: [{s}{s}]]
+        \\NtReadFile(handle = {any}, length = {any}, offset = {?}) => {any} [bytes_transferred = {any}: [{s}{s}]]
     ;
 
     log.info(
@@ -608,7 +606,7 @@ fn NtWriteFile_Hook(
     Length: windows.ULONG,
     ByteOffset: ?*windows.LARGE_INTEGER,
     Key: ?*windows.ULONG,
-) callconv(.C) windows.NTSTATUS {
+) callconv(.c) windows.NTSTATUS {
     const status = g_pfnNtWriteFile(
         FileHandle,
         Event,
@@ -636,16 +634,16 @@ fn NtWriteFile_Hook(
 
     const fmt =
         \\NtWriteFile(
-        \\  FileHandle    =  {}
+        \\  FileHandle    =  {any}
         \\  Event         =  {?}
         \\  ApcRoutine    =  {?}
         \\  ApcContext    =  {?}
-        \\  IoStatusBlock => {}
+        \\  IoStatusBlock => {any}
         \\  Buffer        =  {?} => [{s}{s}]
-        \\  Length        =  {}
+        \\  Length        =  {any}
         \\  ByteOffset    =  {?}
         \\  Key           =  {?}
-        \\) => {}
+        \\) => {any}
     ;
 
     log.info(
@@ -679,7 +677,7 @@ fn NtWriteFile_Hook_Short(
     Length: windows.ULONG,
     ByteOffset: ?*windows.LARGE_INTEGER,
     Key: ?*windows.ULONG,
-) callconv(.C) windows.NTSTATUS {
+) callconv(.c) windows.NTSTATUS {
     const status = g_pfnNtWriteFile(
         FileHandle,
         Event,
@@ -706,7 +704,7 @@ fn NtWriteFile_Hook_Short(
     const buffer_preview = makeBufferPreview(&preview_buf, Buffer, Length, IoStatusBlock.BytesTransferred);
 
     const fmt =
-        \\NtWriteFile(handle = {}, length = {}, offset = {?}) => {} [bytes_transferred = {}: [{s}{s}]]
+        \\NtWriteFile(handle = {any}, length = {any}, offset = {?}) => {any} [bytes_transferred = {any}: [{s}{s}]]
     ;
 
     log.info(
@@ -736,7 +734,7 @@ fn NtDeviceIoControlFile_Hook(
     InputBufferLength: windows.ULONG,
     OutputBuffer: ?*anyopaque,
     OutputBufferLength: windows.ULONG,
-) callconv(.C) windows.NTSTATUS {
+) callconv(.c) windows.NTSTATUS {
     const status = g_pfnNtDeviceIoControlFile(
         FileHandle,
         Event,
@@ -768,17 +766,17 @@ fn NtDeviceIoControlFile_Hook(
 
     const fmt =
         \\NtDeviceIoControlFile(
-        \\  FileHandle         =  {}
+        \\  FileHandle         =  {any}
         \\  Event              =  {?}
         \\  ApcRoutine         =  {?}
         \\  ApcContext         =  {?}
-        \\  IoStatusBlock      => {}
+        \\  IoStatusBlock      => {any}
         \\  IoControlCode      =  0x{X}
         \\  InputBuffer        =  {?} = [{s}{s}]
-        \\  InputBufferLength  =  {}
+        \\  InputBufferLength  =  {any}
         \\  OutputBuffer       =  {?} => [{s}{s}]
-        \\  OutputBufferLength =  {}
-        \\) => {}
+        \\  OutputBufferLength =  {any}
+        \\) => {any}
     ;
 
     log.info(
@@ -816,7 +814,7 @@ fn NtDeviceIoControlFile_Hook_Short(
     InputBufferLength: windows.ULONG,
     OutputBuffer: ?*anyopaque,
     OutputBufferLength: windows.ULONG,
-) callconv(.C) windows.NTSTATUS {
+) callconv(.c) windows.NTSTATUS {
     const status = g_pfnNtDeviceIoControlFile(
         FileHandle,
         Event,
@@ -854,7 +852,7 @@ fn NtDeviceIoControlFile_Hook_Short(
         "";
 
     const fmt =
-        \\NtDeviceIoControlFile(handle = {}, ioctl = 0x{X}, in_len = {}, out_len = {}) => {} [bytes_transferred = {}: in=`{s}` out=`{s}`]
+        \\NtDeviceIoControlFile(handle = {any}, ioctl = 0x{X}, in_len = {any}, out_len = {any}) => {any} [bytes_transferred = {any}: in=`{s}` out=`{s}`]
     ;
 
     log.info(
@@ -887,14 +885,14 @@ const Reason = enum(c_int) {
 //
 // Has to be called by the function exported as ordinal 1, which it will be if
 // we don't export anything else.
-pub fn DllMain(hModule: HINSTANCE, dwReason: DWORD, lpReserved: PVOID) callconv(WINAPI) BOOL {
+pub fn DllMain(hModule: HINSTANCE, dwReason: DWORD, lpReserved: PVOID) callconv(.winapi) BOOL {
     _ = hModule;
     _ = lpReserved;
     const reason: Reason = @enumFromInt(dwReason);
 
     return dllMain(reason) catch |e| {
         const reason_str = std.enums.tagName(Reason, reason) orelse "<unknown>";
-        log.err("DLL {s} failed ({s}): {}", .{ reason_str, @src().file, e });
+        log.err("DLL {s} failed ({s}): {any}", .{ reason_str, @src().file, e });
         return windows.FALSE;
     };
 }
@@ -916,7 +914,7 @@ fn dllMain(reason: Reason) !BOOL {
                 env_opts_parse_opts,
                 std.process.getenvW(env_opts_key),
             ) catch |err| {
-                log.err("Failed to parse env opts: {}", .{err});
+                log.err("Failed to parse env opts: {any}", .{err});
                 return err;
             };
 
@@ -932,7 +930,7 @@ fn dllMain(reason: Reason) !BOOL {
                         //   * linking against the DLL normally.
                     },
                     else => {
-                        log.err("restoreAfterWith: {}", .{err});
+                        log.err("restoreAfterWith: {any}", .{err});
                         return err;
                     },
                 }
@@ -978,57 +976,57 @@ fn dllMain(reason: Reason) !BOOL {
 
         .process_detach => {
             detours.transactionBegin() catch |err| {
-                log.err("detours.transactionBegin: {}", .{err});
+                log.err("detours.transactionBegin: {any}", .{err});
                 return err;
             };
             detours.updateThread(windows.GetCurrentThread()) catch |err| {
-                log.err("detours.updateThread: {}", .{err});
+                log.err("detours.updateThread: {any}", .{err});
                 return err;
             };
             detours.detach(
                 @ptrCast(&g_pfnNtCreateFile),
                 selectHook(&NtCreateFile_Hook, &NtCreateFile_Hook_Short),
             ) catch |err| {
-                log.err("detours.detach: {}", .{err});
+                log.err("detours.detach: {any}", .{err});
                 return err;
             };
             detours.detach(
                 @ptrCast(&g_pfnNtOpenFile),
                 selectHook(&NtOpenFile_Hook, &NtOpenFile_Hook_Short),
             ) catch |err| {
-                log.err("detours.detach: {}", .{err});
+                log.err("detours.detach: {any}", .{err});
                 return err;
             };
             detours.detach(
                 @ptrCast(&g_pfnNtReadFile),
                 selectHook(&NtReadFile_Hook, &NtReadFile_Hook_Short),
             ) catch |err| {
-                log.err("detours.detach: {}", .{err});
+                log.err("detours.detach: {any}", .{err});
                 return err;
             };
             detours.detach(
                 @ptrCast(&g_pfnNtWriteFile),
                 selectHook(&NtWriteFile_Hook, &NtWriteFile_Hook_Short),
             ) catch |err| {
-                log.err("detours.detach: {}", .{err});
+                log.err("detours.detach: {any}", .{err});
                 return err;
             };
             detours.detach(
                 @ptrCast(&g_pfnNtDeviceIoControlFile),
                 selectHook(&NtDeviceIoControlFile_Hook, &NtDeviceIoControlFile_Hook_Short),
             ) catch |err| {
-                log.err("detours.detach: {}", .{err});
+                log.err("detours.detach: {any}", .{err});
                 return err;
             };
             if (g_env_opts.hook_close) detours.detach(
                 @ptrCast(&g_pfnNtClose),
                 @ptrCast(@constCast(&NtClose_Hook)),
             ) catch |err| {
-                log.err("detours.detach: {}", .{err});
+                log.err("detours.detach: {any}", .{err});
                 return err;
             };
             detours.transactionCommit() catch |err| {
-                log.err("detours.transactionCommit: {}", .{err});
+                log.err("detours.transactionCommit: {any}", .{err});
                 return err;
             };
         },
@@ -1053,17 +1051,16 @@ fn logFn(
     if (@intFromEnum(level) > @intFromEnum(g_env_opts.log_level)) return;
     if (g_env_opts.log == .none) return;
 
-    const writer: std.io.AnyWriter = switch (g_env_opts.log) {
-        .stderr => std.io.getStdErr().writer().any(),
-        .stdout => std.io.getStdOut().writer().any(),
+    const writer: std.fs.File.Writer = switch (g_env_opts.log) {
+        .stderr => std.fs.File.stderr().writer(&.{}),
+        .stdout => std.fs.File.stdout().writer(&.{}),
         // .debug => outputDebugStringAWriter.any(), // TODO
         else => return,
     };
 
     const level_txt = comptime level.asText();
     const prefix2 = if (scope == .default) ": " else "(" ++ @tagName(scope) ++ "): ";
-    var bw = std.io.bufferedWriter(writer);
-    const buf_writer = bw.writer();
+    var buf_writer = writer.interface;
 
     nosuspend {
         if (g_env_opts.dim) {
@@ -1073,7 +1070,7 @@ fn logFn(
         if (g_env_opts.dim) {
             buf_writer.writeAll(VT_100_RESET) catch return;
         }
-        bw.flush() catch return;
+        buf_writer.flush() catch return;
     }
 }
 

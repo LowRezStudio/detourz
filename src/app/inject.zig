@@ -12,11 +12,11 @@ pub fn run(allocator: std.mem.Allocator, dll_path: []const u8, exe_path: []const
 
     try editExeImports(allocator, dll_path, exe_path);
 
-    const stdout = std.io.getStdOut().writer();
+    var stdout = std.fs.File.stdout().writer(&.{});
     if (dll_path.len > 0) {
-        stdout.print("Successfully injected {s} into {s}\n", .{ dll_path, exe_path }) catch return;
+        stdout.interface.print("Successfully injected {s} into {s}\n", .{ dll_path, exe_path }) catch return;
     } else {
-        stdout.print("Successfully removed all imports from {s}\n", .{exe_path}) catch return;
+        stdout.interface.print("Successfully removed all imports from {s}\n", .{exe_path}) catch return;
     }
 }
 
@@ -40,7 +40,7 @@ fn validateDllExportsOrdinal1(dll_path: []const u8) !void {
             ordinal: windows.ULONG,
             name: ?[*:0]const u8,
             code: ?*anyopaque,
-        ) callconv(.C) windows.BOOL {
+        ) callconv(.c) windows.BOOL {
             _ = name;
             _ = code;
 
@@ -126,7 +126,9 @@ fn editExeImports(allocator: std.mem.Allocator, dll_path: []const u8, exe_path: 
         }
 
         // Print the imports.
-        std.io.getStdOut().writer().print("Imports:\n", .{}) catch return;
+        var stdout = std.fs.File.stdout().writer(&.{});
+        stdout.interface.print("Imports:\n", .{}) catch return;
+
         try exe.editImports(
             null,
             listBywayCallback,
@@ -162,7 +164,7 @@ fn addBywayCallback(
     context: ?*anyopaque,
     file: ?[*:0]const u8,
     out_file: *?[*:0]const u8,
-) callconv(.C) windows.BOOL {
+) callconv(.c) windows.BOOL {
     const ctx = @as(*CallbackContext, @ptrCast(@alignCast(context.?)));
 
     if (file == null and !ctx.added_dll) {
@@ -177,12 +179,12 @@ fn listBywayCallback(
     context: ?*anyopaque,
     file: ?[*:0]const u8,
     out_file: *?[*:0]const u8,
-) callconv(.C) windows.BOOL {
+) callconv(.c) windows.BOOL {
     _ = context;
 
-    const stdout = std.io.getStdOut().writer();
+    var stdout = std.fs.File.stdout().writer(&.{});
     if (file) |f| {
-        stdout.print("  {s}\n", .{f}) catch return windows.FALSE;
+        stdout.interface.print("  {s}\n", .{f}) catch return windows.FALSE;
     }
 
     out_file.* = file;
@@ -194,15 +196,15 @@ fn listFileCallback(
     orig_file: [*:0]const u8,
     file: [*:0]const u8,
     out_file: *?[*:0]const u8,
-) callconv(.C) windows.BOOL {
+) callconv(.c) windows.BOOL {
     _ = context;
 
-    const stdout = std.io.getStdOut().writer();
+    var stdout = std.fs.File.stdout().writer(&.{});
 
     if (std.mem.eql(u8, std.mem.span(orig_file), std.mem.span(file))) {
-        stdout.print("  {s}\n", .{orig_file}) catch return windows.FALSE;
+        stdout.interface.print("  {s}\n", .{orig_file}) catch return windows.FALSE;
     } else {
-        stdout.print("  {s} -> {s}\n", .{ orig_file, file }) catch return windows.FALSE;
+        stdout.interface.print("  {s} -> {s}\n", .{ orig_file, file }) catch return windows.FALSE;
     }
 
     out_file.* = file;

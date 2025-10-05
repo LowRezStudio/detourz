@@ -1,7 +1,12 @@
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-    const target = b.standardTargetOptions(.{});
+    const target = b.resolveTargetQuery(.{
+        .cpu_arch = .x86_64,
+        .os_tag = .windows,
+        .abi = .gnu,
+    });
+
     const optimize = b.standardOptimizeOption(.{});
 
     // C++ Detours library.
@@ -103,10 +108,12 @@ fn buildDetours(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.b
     const detours_dep = b.dependency("detours", .{});
 
     // Create a static library for Detours
-    const lib = b.addStaticLibrary(.{
+    const lib = b.addLibrary(.{
         .name = "detours",
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+        }),
     });
 
     const source_files = &[_][]const u8{
@@ -134,9 +141,9 @@ fn buildDetours(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.b
         },
     });
 
-    lib.linkLibC();
-    lib.linkLibCpp();
-    lib.linkSystemLibrary("kernel32");
+    lib.root_module.link_libc = true;
+    lib.root_module.link_libcpp = true;
+    lib.root_module.linkSystemLibrary("kernel32", .{});
 
     switch (target.result.cpu.arch) {
         .x86 => {
