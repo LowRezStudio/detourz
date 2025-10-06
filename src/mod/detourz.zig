@@ -1,7 +1,10 @@
 const std = @import("std");
 const windows = std.os.windows;
+const builtin = @import("builtin");
 
 const BinaryHandle = opaque {};
+
+const WINAPI: std.builtin.CallingConvention = if (builtin.cpu.arch == .x86) .{ .x86_stdcall = .{} } else .c;
 
 // Missing from windows.Win32Error.
 const ERROR_INVALID_OPERATION: u32 = 4317;
@@ -621,12 +624,12 @@ pub fn updateThread(thread_handle: windows.HANDLE) Error!void {
 extern fn DetourAllocateRegionWithinJumpBounds(
     pbTarget: ?*const anyopaque,
     pcbAllocatedSize: *windows.DWORD,
-) callconv(.c) ?*anyopaque;
+) callconv(WINAPI) ?*anyopaque;
 
 extern fn DetourAttach(
     ppPointer: *?*anyopaque,
     pDetour: ?*anyopaque,
-) callconv(.c) windows.LONG;
+) callconv(WINAPI) windows.LONG;
 
 extern fn DetourAttachEx(
     ppPointer: *?*anyopaque,
@@ -634,24 +637,24 @@ extern fn DetourAttachEx(
     ppRealTrampoline: ?*?*anyopaque,
     ppRealTarget: ?*?*anyopaque,
     ppRealDetour: ?*?*anyopaque,
-) callconv(.c) windows.LONG;
+) callconv(WINAPI) windows.LONG;
 
 pub const BinaryBywayCallback = *const fn (
     pContext: ?*anyopaque,
     pszFile: ?[*:0]const u8,
     ppszOutFile: *?[*:0]const u8,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 pub const BinaryCommitCallback = *const fn (
     pContext: ?*anyopaque,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 pub const BinaryFileCallback = *const fn (
     pContext: ?*anyopaque,
     pszOrigFile: [*:0]const u8,
     pszFile: [*:0]const u8,
     ppszOutFile: *?[*:0]const u8,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 pub const BinarySymbolCallback = *const fn (
     pContext: ?*anyopaque,
@@ -661,34 +664,34 @@ pub const BinarySymbolCallback = *const fn (
     pszOrigSymbol: ?[*:0]const u8,
     pszSymbol: ?[*:0]const u8,
     ppszOutSymbol: *?[*:0]const u8,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 pub const EnumerateExportCallback = *const fn (
     pContext: ?*anyopaque,
     nOrdinal: windows.ULONG,
     pszName: ?[*:0]const u8,
     pCode: ?*anyopaque,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 pub const ImportFileCallback = *const fn (
     pContext: ?*anyopaque,
     hModule: ?windows.HMODULE,
     pszName: ?[*:0]const u8,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 pub const ImportFuncCallback = *const fn (
     pContext: ?*anyopaque,
     nOrdinal: windows.ULONG,
     pszName: ?[*:0]const u8,
     pvFunc: ?*anyopaque,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 pub const ImportFuncCallbackEx = *const fn (
     pContext: ?*anyopaque,
     nOrdinal: windows.ULONG,
     pszName: ?[*:0]const u8,
     pvFunc: ?*?*anyopaque,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 pub const CreateProcessRoutineW = *const fn (
     lpApplicationName: ?[*:0]const u16,
@@ -701,16 +704,16 @@ pub const CreateProcessRoutineW = *const fn (
     lpCurrentDirectory: ?[*:0]const u16,
     lpStartupInfo: *windows.STARTUPINFOW,
     lpProcessInformation: *windows.PROCESS_INFORMATION,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 extern fn DetourBinaryClose(
     pBinary: *BinaryHandle,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 extern fn DetourBinaryDeletePayload(
     pBinary: *BinaryHandle,
     rguid: *const windows.GUID,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 extern fn DetourBinaryEditImports(
     pBinary: *BinaryHandle,
@@ -719,63 +722,63 @@ extern fn DetourBinaryEditImports(
     pfFile: ?BinaryFileCallback,
     pfSymbol: ?BinarySymbolCallback,
     pfFinal: ?BinaryCommitCallback,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 extern fn DetourBinaryEnumeratePayloads(
     pBinary: *BinaryHandle,
     pGuid: ?*windows.GUID,
     pcbData: *windows.DWORD,
     pnIterator: *windows.DWORD,
-) callconv(.c) ?*anyopaque;
+) callconv(WINAPI) ?*anyopaque;
 
 extern fn DetourBinaryFindPayload(
     pBinary: *BinaryHandle,
     rguid: *const windows.GUID,
     pcbData: *windows.DWORD,
-) callconv(.c) ?*anyopaque;
+) callconv(WINAPI) ?*anyopaque;
 
 extern fn DetourBinaryOpen(
     hFile: windows.HANDLE,
-) callconv(.c) ?*BinaryHandle;
+) callconv(WINAPI) ?*BinaryHandle;
 
 extern fn DetourBinaryPurgePayloads(
     pBinary: *BinaryHandle,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 extern fn DetourBinaryResetImports(
     pBinary: *BinaryHandle,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 extern fn DetourBinarySetPayload(
     pBinary: *BinaryHandle,
     rguid: *const windows.GUID,
     pData: ?*const anyopaque,
     cbData: windows.DWORD,
-) callconv(.c) ?*anyopaque;
+) callconv(WINAPI) ?*anyopaque;
 
 extern fn DetourBinaryWrite(
     pBinary: *BinaryHandle,
     hFile: windows.HANDLE,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 extern fn DetourCodeFromPointer(
     pPointer: ?*anyopaque,
     ppGlobals: ?*?*anyopaque,
-) callconv(.c) ?*anyopaque;
+) callconv(WINAPI) ?*anyopaque;
 
 extern fn DetourCopyPayloadToProcess(
     hProcess: windows.HANDLE,
     rguid: *const windows.GUID,
     pvData: ?*const anyopaque,
     cbData: windows.DWORD,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 extern fn DetourCopyPayloadToProcessEx(
     hProcess: windows.HANDLE,
     rguid: *const windows.GUID,
     pvData: ?*const anyopaque,
     cbData: windows.DWORD,
-) callconv(.c) ?*anyopaque;
+) callconv(WINAPI) ?*anyopaque;
 
 extern fn DetourCreateProcessWithDllW(
     lpApplicationName: ?[*:0]const u16,
@@ -790,7 +793,7 @@ extern fn DetourCreateProcessWithDllW(
     lpProcessInformation: *windows.PROCESS_INFORMATION,
     lpDllName: [*:0]const u8,
     pfCreateProcessW: ?CreateProcessRoutineW,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 extern fn DetourCreateProcessWithDllExW(
     lpApplicationName: ?[*:0]const u16,
@@ -805,7 +808,7 @@ extern fn DetourCreateProcessWithDllExW(
     lpProcessInformation: *windows.PROCESS_INFORMATION,
     lpDllName: [*:0]const u8,
     pfCreateProcessW: ?CreateProcessRoutineW,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 extern fn DetourCreateProcessWithDllsW(
     lpApplicationName: ?[*:0]const u16,
@@ -821,88 +824,88 @@ extern fn DetourCreateProcessWithDllsW(
     nDlls: windows.DWORD,
     rlpDlls: [*]const [*:0]const u8,
     pfCreateProcessW: ?CreateProcessRoutineW,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 extern fn DetourDetach(
     ppPointer: *?*anyopaque,
     pDetour: ?*anyopaque,
-) callconv(.c) windows.LONG;
+) callconv(WINAPI) windows.LONG;
 
 extern fn DetourEnumerateExports(
     hModule: ?windows.HMODULE,
     pContext: ?*anyopaque,
     pfExport: EnumerateExportCallback,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 extern fn DetourEnumerateImports(
     hModule: ?windows.HMODULE,
     pContext: ?*anyopaque,
     pfImportFile: ?ImportFileCallback,
     pfImportFunc: ?ImportFuncCallback,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 extern fn DetourEnumerateImportsEx(
     hModule: ?windows.HMODULE,
     pContext: ?*anyopaque,
     pfImportFile: ?ImportFileCallback,
     pfImportFunc: ?ImportFuncCallbackEx,
-) callconv(.c) windows.BOOL;
+) callconv(WINAPI) windows.BOOL;
 
 extern fn DetourEnumerateModules(
     hModuleLast: ?windows.HMODULE,
-) callconv(.c) ?windows.HMODULE;
+) callconv(WINAPI) ?windows.HMODULE;
 
 extern fn DetourFindFunction(
     pszModule: [*:0]const u8,
     pszFunction: [*:0]const u8,
-) callconv(.c) ?*anyopaque;
+) callconv(WINAPI) ?*anyopaque;
 
 extern fn DetourFindPayload(
     hModule: ?windows.HMODULE,
     rguid: *const windows.GUID,
     pcbData: ?*windows.DWORD,
-) callconv(.c) ?*anyopaque;
+) callconv(WINAPI) ?*anyopaque;
 
 extern fn DetourFindPayloadEx(
     rguid: *const windows.GUID,
     pcbData: ?*windows.DWORD,
-) callconv(.c) ?*anyopaque;
+) callconv(WINAPI) ?*anyopaque;
 
 extern fn DetourFindRemotePayload(
     hProcess: windows.HANDLE,
     rguid: *const windows.GUID,
     pcbData: ?*windows.DWORD,
-) callconv(.c) ?*anyopaque;
+) callconv(WINAPI) ?*anyopaque;
 
 pub const FinishHelperProcessCallback = *const fn (
     hwnd: windows.HWND,
     hinst: windows.HINSTANCE,
     lpszCmdLine: [*:0]u8,
     nCmdShow: windows.INT,
-) callconv(.c) void;
+) callconv(WINAPI) void;
 
 pub extern fn DetourFinishHelperProcess(
     hwnd: windows.HWND,
     hinst: windows.HINSTANCE,
     lpszCmdLine: [*:0]u8,
     nCmdShow: windows.INT,
-) callconv(.c) void;
+) callconv(WINAPI) void;
 
-extern fn DetourGetContainingModule(pvAddr: ?*anyopaque) callconv(.c) ?windows.HMODULE;
-extern fn DetourGetEntryPoint(hModule: ?windows.HMODULE) callconv(.c) ?*anyopaque;
-extern fn DetourGetModuleSize(hModule: ?windows.HMODULE) callconv(.c) windows.ULONG;
-extern fn DetourGetSizeOfPayloads(hModule: ?windows.HMODULE) callconv(.c) windows.DWORD;
-extern fn DetourIsHelperProcess() callconv(.c) windows.BOOL;
-extern fn DetourRestoreAfterWith() callconv(.c) windows.BOOL;
-extern fn DetourSetIgnoreTooSmall(fIgnore: windows.BOOL) callconv(.c) windows.BOOL;
-extern fn DetourSetRetainRegions(fRetain: windows.BOOL) callconv(.c) windows.BOOL;
-extern fn DetourSetSystemRegionLowerBound(pSystemRegionLowerBound: ?*anyopaque) callconv(.c) ?*anyopaque;
-extern fn DetourSetSystemRegionUpperBound(pSystemRegionUpperBound: ?*anyopaque) callconv(.c) ?*anyopaque;
-extern fn DetourTransactionAbort() callconv(.c) windows.LONG;
-extern fn DetourTransactionBegin() callconv(.c) windows.LONG;
-extern fn DetourTransactionCommit() callconv(.c) windows.LONG;
-extern fn DetourTransactionCommitEx(pppFailedPointer: ?*?*?*anyopaque) callconv(.c) windows.LONG;
-extern fn DetourUpdateThread(hThread: windows.HANDLE) callconv(.c) windows.LONG;
+extern fn DetourGetContainingModule(pvAddr: ?*anyopaque) callconv(WINAPI) ?windows.HMODULE;
+extern fn DetourGetEntryPoint(hModule: ?windows.HMODULE) callconv(WINAPI) ?*anyopaque;
+extern fn DetourGetModuleSize(hModule: ?windows.HMODULE) callconv(WINAPI) windows.ULONG;
+extern fn DetourGetSizeOfPayloads(hModule: ?windows.HMODULE) callconv(WINAPI) windows.DWORD;
+extern fn DetourIsHelperProcess() callconv(WINAPI) windows.BOOL;
+extern fn DetourRestoreAfterWith() callconv(WINAPI) windows.BOOL;
+extern fn DetourSetIgnoreTooSmall(fIgnore: windows.BOOL) callconv(WINAPI) windows.BOOL;
+extern fn DetourSetRetainRegions(fRetain: windows.BOOL) callconv(WINAPI) windows.BOOL;
+extern fn DetourSetSystemRegionLowerBound(pSystemRegionLowerBound: ?*anyopaque) callconv(WINAPI) ?*anyopaque;
+extern fn DetourSetSystemRegionUpperBound(pSystemRegionUpperBound: ?*anyopaque) callconv(WINAPI) ?*anyopaque;
+extern fn DetourTransactionAbort() callconv(WINAPI) windows.LONG;
+extern fn DetourTransactionBegin() callconv(WINAPI) windows.LONG;
+extern fn DetourTransactionCommit() callconv(WINAPI) windows.LONG;
+extern fn DetourTransactionCommitEx(pppFailedPointer: ?*?*?*anyopaque) callconv(WINAPI) windows.LONG;
+extern fn DetourUpdateThread(hThread: windows.HANDLE) callconv(WINAPI) windows.LONG;
 
 test "refAllDecls" {
     std.testing.refAllDecls(@This());

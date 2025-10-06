@@ -1,8 +1,11 @@
 const std = @import("std");
 const detours = @import("detourz");
 const windows = std.os.windows;
+const builtin = @import("builtin");
 
 const log = std.log.scoped(.exports);
+
+const WINAPI: std.builtin.CallingConvention = if (builtin.cpu.arch == .x86) .{ .x86_stdcall = .{} } else .c;
 
 pub fn run(allocator: std.mem.Allocator, module_path: []const u8) !void {
     const wide_path = try std.unicode.utf8ToUtf16LeAllocZ(allocator, module_path);
@@ -35,7 +38,7 @@ pub fn run(allocator: std.mem.Allocator, module_path: []const u8) !void {
             nOrdinal: windows.ULONG,
             pszName: ?[*:0]const u8,
             pCode: ?*anyopaque,
-        ) callconv(.c) windows.BOOL {
+        ) callconv(WINAPI) windows.BOOL {
             const ctx = @as(*ExportContext, @ptrCast(@alignCast(pContext)));
 
             ctx.stdout.interface.print("{d:>8}", .{nOrdinal}) catch return windows.FALSE;

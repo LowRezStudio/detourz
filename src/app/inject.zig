@@ -1,9 +1,12 @@
 const std = @import("std");
+const windows = std.os.windows;
+const builtin = @import("builtin");
+
 const detours = @import("detourz");
 
 const log = std.log.scoped(.inject);
 
-const windows = std.os.windows;
+const WINAPI: std.builtin.CallingConvention = if (builtin.cpu.arch == .x86) .{ .x86_stdcall = .{} } else .c;
 
 pub fn run(allocator: std.mem.Allocator, dll_path: []const u8, exe_path: []const u8) !void {
     if (dll_path.len > 0) {
@@ -40,7 +43,7 @@ fn validateDllExportsOrdinal1(dll_path: []const u8) !void {
             ordinal: windows.ULONG,
             name: ?[*:0]const u8,
             code: ?*anyopaque,
-        ) callconv(.c) windows.BOOL {
+        ) callconv(WINAPI) windows.BOOL {
             _ = name;
             _ = code;
 
@@ -164,7 +167,7 @@ fn addBywayCallback(
     context: ?*anyopaque,
     file: ?[*:0]const u8,
     out_file: *?[*:0]const u8,
-) callconv(.c) windows.BOOL {
+) callconv(WINAPI) windows.BOOL {
     const ctx = @as(*CallbackContext, @ptrCast(@alignCast(context.?)));
 
     if (file == null and !ctx.added_dll) {
@@ -179,7 +182,7 @@ fn listBywayCallback(
     context: ?*anyopaque,
     file: ?[*:0]const u8,
     out_file: *?[*:0]const u8,
-) callconv(.c) windows.BOOL {
+) callconv(WINAPI) windows.BOOL {
     _ = context;
 
     var stdout = std.fs.File.stdout().writer(&.{});
@@ -196,7 +199,7 @@ fn listFileCallback(
     orig_file: [*:0]const u8,
     file: [*:0]const u8,
     out_file: *?[*:0]const u8,
-) callconv(.c) windows.BOOL {
+) callconv(WINAPI) windows.BOOL {
     _ = context;
 
     var stdout = std.fs.File.stdout().writer(&.{});
