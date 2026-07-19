@@ -131,7 +131,7 @@ fn buildDetours(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.b
         "disolarm64.cpp",
     };
 
-    lib.addCSourceFiles(.{
+    lib.root_module.addCSourceFiles(.{
         .root = detours_dep.path("src"),
         .files = source_files,
 
